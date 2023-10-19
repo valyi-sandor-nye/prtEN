@@ -1,7 +1,5 @@
 package foxandhounds.business_logic;
 
-//import foxandhounds.game.FoxAndHoundsPosition;
-//import static foxandhounds.game.GameSearch.HUMAN;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,14 +7,15 @@ import java.util.Random;
 import java.util.Vector;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-//import foxandhounds.game.FoxAndHoundsGame;
+
 
 /**
  * A table represents the actual state of the fox-and-houds game. Its
  * representation way is doubled with respect to the figures. One, it stores a
  * Fox and a list of hounds, second, it stores a matrix that stores the
  * positions as a character matrix. 'f' for fox, 'h' for hound, and ' ' for an
- * empty position. The list of possible moves of both kind of figures is also
+ * empty position. This representation is somehow redundant.
+ * The list of possible moves of both kind of figures is also
  * stored for the following reason: the list is used not only while determining
  * the next step of the machine player (in a random way) but while determining
  * if the hounds party has won (there is no possible move for the fox, it is
@@ -53,7 +52,7 @@ public class Table {
      * following reason: the list is used not only while determining the next
      * step of the machine player (in a random way) but while determining if the
      * hounds party has won (there is no possible move for the fox, it is
-     * locked, it cannot ecape even through the gutter).
+     * locked, it cannot escape even through the gutter).
      */
     List<Move> foxPossibleMoves = null;
     List<Move> houndsPossibleMoves = null;

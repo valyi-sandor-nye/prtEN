@@ -18,16 +18,16 @@ public class Fox implements Figure{
         return col;
     }
 
-    public void setCol(int p) {
-        this.col = p;
+    public void setCol(int p_col) {
+        this.col = p_col;
     }
 
     public int getRow() {
         return row;
     }
 
-    public void setRow(int p) {
-        this.row = p;
+    public void setRow(int p_row) {
+        this.row = p_row;
     }
 
     @Override

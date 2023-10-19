@@ -5,31 +5,33 @@ package foxandhounds.business_logic;
  * @author valyis
  */
 public class Move {
-    private Direction direction;
+
     private Figure mover;
-    public Move(Figure m) {
-        mover = m;
+    private Direction direction;
+
+    public Move(Figure p_mover) {
+        mover = p_mover;
     }
 
-    public Move(Figure m, Direction dir) {
-        mover = m;
-        direction = dir;
+    public Move(Figure p_mover, Direction p_direction) {
+        mover = p_mover;
+        direction = p_direction;
     }
 
     public Direction getDirection() {
         return direction;
     }
 
-    public void setDirection(Direction direction) {
-        this.direction = direction;
+    public void setDirection(Direction p_direction) {
+        this.direction = p_direction;
     }
 
     public Figure getMover() {
         return mover;
     }
 
-    public void setMover(Figure mover) {
-        this.mover = mover;
+    public void setMover(Figure p_mover) {
+        this.mover = p_mover;
     }
 
     @Override

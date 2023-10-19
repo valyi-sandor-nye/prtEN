@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
 /**
  *
  * @author valyis
- *  Model only wraps a table. This is the model in the MVC division.
+ *  Model only wraps a table. This is the model in the MVC style division.
  * 
  */
 @XmlRootElement
