@@ -1,4 +1,4 @@
-package org.example;
+package realestate;
 
 public class RealEstate implements PropertyInterface, Comparable <RealEstate>{
     private String city;

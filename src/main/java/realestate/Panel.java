@@ -1,4 +1,4 @@
-package org.example;
+package realestate;
 
 public class Panel extends RealEstate implements PanelInterface{
 private int floor;

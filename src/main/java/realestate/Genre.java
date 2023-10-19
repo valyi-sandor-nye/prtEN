@@ -1,4 +1,4 @@
-package org.example;
+package realestate;
 
 public enum Genre {
     FAMILYHOUSE, CONDOMINIUM,

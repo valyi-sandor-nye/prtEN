@@ -1,4 +1,4 @@
-package org.example;
+package realestate;
 
 public interface PanelInterface {
     boolean hasSameAmount(RealEstate realEstate) ;
