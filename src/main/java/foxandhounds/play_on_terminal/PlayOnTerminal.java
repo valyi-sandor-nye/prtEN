@@ -20,92 +20,121 @@ public class PlayOnTerminal {
     static int size = -1;
     static Table table = null;
     static Boolean humanPlaysWithFox = null; 
-    static Scanner scanner = new Scanner(System.in);
+    static Scanner scanner = null;
 
     
     public static void main(String[] a) {
-            readInSizeAndSide();
+            readInSize();
             editing();
             System.out.println("The edited table is: "+table);
+            readInSide();
             playing();
         }
 
 
-    public static void readInSizeAndSide() {
-        System.out.print("Give the size of the table as an integer between 4 and 12: ");
+    public static void readInSize() {
+        scanner = new Scanner(System.in);
+        System.out.print("Give the size of the table as an even integer between 4 and 12: ");
         String read = null;
-        while (size<=0) {
+        while (size <= 0) {
             try {
                 read = scanner.nextLine();
                 size = Integer.parseInt(read);
-            } catch(NumberFormatException ex) {
+            } catch (NumberFormatException ex) {
                 logger.warning("not integer is given as size");
                 System.out.print("Give integer as size \n ");
             }
-            if (!(size <=12 && size>=4)) {        
-                System.out.print("\nOnce again give the size of the table as an integer between 4 and 12: ");
+            if (!(size <= 12 && size >= 4 && size % 2 == 0)) {
+                System.out.print("\nOnce again give the size of the table as an even integer between 4 and 12: ");
             }
-        System.out.print("\nWould you lead fox (f) or hounds (h) or will you exit (x)?: ");
-        boolean player_determined = false; 
-        read = null;
-        while (!player_determined) {
-               char c = scanner.nextLine().charAt(0);
+            System.out.print("Ok, the size of the table: " + size + "\n");
+        }
+    }
+
+
+    public static void readInSide() {
+            scanner = new Scanner(System.in);
+            String read = null;
+            System.out.print("\nWould you lead fox (f) or hounds (h) or will you exit (x)?: ");
+            boolean player_determined = false;
+            read = null;
+            while (!player_determined) {
+                String line = scanner.nextLine();
+                char c = line.charAt(0);
                 if (Arrays.asList('f','h','x','F','H','X').contains(c)) {
                     player_determined=true;
                     switch (Character.toLowerCase(c)) {
-                        case ('f'): humanPlaysWithFox = true; break;
-                        case ('h'): humanPlaysWithFox = false; break;
-                        case ('x'): humanPlaysWithFox = null; break;
+                        case ('f'): humanPlaysWithFox = true;
+                            System.out.println("You will play with the fox");
+                            break;
+                        case ('h'): humanPlaysWithFox = false;
+                            System.out.println("You will play with the hounds");
+                            break;
+                        case ('x'): humanPlaysWithFox = null;
+                            System.exit(0);
+                            break;
                     }
                 } else {
                     System.out.println("Once again, would you lead fox (f) or hounds (h) or will you exit (x)?: ");
-                
+
                 }
-                    
+
             }
-        }
     }
-    
+
+
+
     public static void editing() {
         Table table = Table.getStarterTable(size);
-        System.out.println("Editing happens now \n"+
-                "How do you wish the editing? From scratch (u)\n"+
-                "or from the starter table by steps(k) "+"or with a random table? (v)\n"+"x -exit(x)");
+        System.out.println("Editing happens now from empty table.\n"+
+                "How do you wish the editing? From empty table (e)\n"+
+                "or from the starter table by steps(s) "+"or with a random table? (r)\n"+"x -exit(x)"+
+                "random does not work yet");
         Character userInput = ' ';
-        while (!Arrays.asList('u','k','v','x').contains(Character.toLowerCase(userInput))) {
-            System.out.println("u/k/v/x: ");
+        scanner = new Scanner(System.in);
+        while (!Arrays.asList('e','s','r','x').contains(Character.toLowerCase(userInput))) {
+            System.out.println("e/s/r/x: ");
             userInput = scanner.nextLine().charAt(0);
-        }  
+        }
         switch (Character.toLowerCase(userInput)) {
 
-            case 'u': {
+            case 'e': {
                 editingFromEmptyTable(); break;
             } 
-            case 'k': {
+            case 's': {
                 editingFromStartingPosition(); break;
             }
-            case 'v': {
+            case 'r': {
                 setRandomTable();
             }
             default: System.exit(0);
                 
             }
+        return;
         }
     
     public static void editingFromEmptyTable() {
+        scanner = new Scanner(System.in);
         table = Table.getEmptyTable(size);  
-        System.out.println("Input x and y coordinates of the fox: ");
-        int y = scanner.nextInt();
-        int x = scanner.nextInt();
-        table.addFox(new Fox(y,x));
-        for (int i=1; i<=4; i++) {
-            System.out.println("Input the "+i+". hounds x and y, positions indexed starting with 0: ");
-            y = scanner.nextInt(); x = scanner.nextInt();
-            table.addHound(new Hound(y,x));            
+        System.out.println("Input row and column coordinates of the fox  indexed starting with 0: ");
+        String line = scanner.nextLine();
+        Scanner lineScanner = new Scanner(line);
+        int row = Integer.parseInt(lineScanner.next());
+        int col= Integer.parseInt(lineScanner.next());
+        table.addFox(new Fox(row,col));
+        for (int i=1; i<=size/2; i++) {
+            System.out.println("Input the "+i+". hounds row and column positions  indexed starting with 0: ");
+            line = scanner.nextLine();
+            lineScanner = new Scanner(line);
+            row = Integer.parseInt(lineScanner.next());
+            col= Integer.parseInt(lineScanner.next());
+            table.addHound(new Hound(row,col));
         }
+        return;
     }
 
     public static void editingFromStartingPosition() {
+        scanner = new Scanner(System.in);
         boolean exit = false;
         Character c;
         Hound activeHound = null;
@@ -148,8 +177,7 @@ public class PlayOnTerminal {
             default: break;
             }
         if (exit) return;
-        System.out.println("The table is now:  "+table); //DEBUG
-        
+        System.out.println("The table is edited by moves:  "+table); //DEBUG
         }
     }
 
@@ -183,12 +211,15 @@ public class PlayOnTerminal {
 
     public static void playWithFox() {
         char c = ' ';
+        scanner = new Scanner(System.in);
         while (true) {
-            if (table.winFox()) {System.out.println("You won"); return;}
-            if (table.winHounds()) {System.out.println("You loose"); return; }
-            System.out.println("Lépés: a/d/q/e, kilépés: x ");
-            while(!Arrays.asList('a','d','q','e','x').contains(c = Character.toLowerCase(scanner.nextLine().charAt(0)))) {}
-            if (c == 'x') return;
+            if (table.winFox()) {System.out.println("You won"); System.exit(0); return;}
+            if (table.winHounds()) {System.out.println("You loose"); System.exit(0); return; }
+            System.out.print("\nYour move: a/d/q/e, exit: x ");
+            String s = scanner.nextLine();
+            c = Character.toLowerCase(s.charAt(0));
+            while(!Arrays.asList('a','d','q','e','x').contains(c )) {}
+            if (c == 'x') System.exit(0);
             table.doMove(new Move(table.getFox(),directionByChar(c)));
             table.doARandomHoundMove();
             System.out.println("The table is now: "+table);
@@ -196,6 +227,7 @@ public class PlayOnTerminal {
     }
 
     private static void playWithHounds() {
+        scanner = new Scanner(System.in);
         char c = ' ';
         Hound activeHound = null;
         boolean exit = false;
@@ -225,7 +257,6 @@ public class PlayOnTerminal {
         if (exit) return;
         table.doARandomFoxMove();
         System.out.println("The table is now: "+table); //DEBUG
-     
         }
     }
         
