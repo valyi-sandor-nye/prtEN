@@ -6,6 +6,8 @@ import foxandhounds.business_logic.Fox;
 import foxandhounds.business_logic.Hound;
 import foxandhounds.business_logic.Move;
 import foxandhounds.business_logic.Table;
+
+import java.sql.*;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.logging.Logger;
@@ -21,27 +23,114 @@ public class PlayOnTerminal {
     static Table table = null;
     static Boolean humanPlaysWithFox = null; 
     static Scanner scanner = null;
+    static boolean isLoadedAGame = false;
+    static Boolean foxIsOnMove = null;
 
     
-    public static void main(String[] a) {
-            loadASavedGame();
-            readInSize();
-            editing();
-            System.out.println("The edited table is: "+table);
+    public static void main(String[] a) throws ClassNotFoundException {
+            isLoadedAGame =  questionForLoading();
+            if (!isLoadedAGame) {
+                readInSize();
+                editing();
+            }
+            System.out.println("The table to play is: "+table);
             readInSide();
             playing();
             saveThePlayedGame();
         }
 
 
-    public static void loadASavedGame() {}
+    public static boolean questionForLoading() throws ClassNotFoundException {
+        scanner = new Scanner(System.in);
+        System.out.println("Do you want to load a saved game from the database? ");
+        String read = null;
+        char answer = ' ';
+        while (!(answer == 'y' || answer == 'n')) {
+                System.out.print("Give 'y' or 'n' as answer: \n ");
+                read = scanner.nextLine();
+                answer = read.toLowerCase().charAt(0);
+            }
+            if (answer == 'n' ) {return false;}
+            else {
+                 Class.forName ("org.h2.Driver");
+                loadAGame();
+                return true;
+            }
+
+
+
+
+    }
+
+    private static void loadAGame() {
+        String queryForAllSavedGames = "SELECT * FROM  SavedGameFoxAndHounds ORDER BY ID;";
+        String queryForOneSavedGameByID =  "SELECT SIZE,NAME,TABLEDESCRIPTION,IS_FOX_ON_MOVE,IS_HUMAN_WITH_FOX "+
+                "FROM  SavedGameFoxAndHounds WHERE ID = ?;";
+        int ID = -1;
+        int IDMAX = -1;
+        try (Connection connection = DriverManager.getConnection("jdbc:h2:tcp://localhost/~/test", "sa", "sa")) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(queryForAllSavedGames);
+            System.out.println("Here come the names of the saved games:");
+            while (resultSet.next()) {
+                ID = resultSet.getInt("ID");
+                String name = resultSet.getString("NAME");
+                System.out.println(ID + " " + name);
+            }
+            resultSet.close();
+            statement.close();
+            IDMAX = ID;
+            scanner = new Scanner(System.in);
+            ID = -1;
+            while (!(1 <= ID && ID <= IDMAX)) {
+                System.out.println("Please select an existing ID of a saved game which you will play: ");
+                String readLine = scanner.nextLine();
+                try {
+                    ID = Integer.parseInt(readLine);
+                } catch (NumberFormatException nfex) {
+                    logger.warning("wrong format for a number");
+                }
+            }
+        } catch (SQLException sqlex) {logger.severe("loading of names of saved games from db failed");}
+
+        try (Connection connection = DriverManager.getConnection("jdbc:h2:tcp://localhost/~/test", "sa", "sa")) {
+
+            PreparedStatement preparedStatement = connection.prepareStatement(queryForOneSavedGameByID);
+            preparedStatement.setInt(1,ID);
+            ResultSet resultSet2 = preparedStatement.executeQuery();
+            resultSet2.next();
+            size = resultSet2.getInt("SIZE");
+            humanPlaysWithFox = (resultSet2.getInt("IS_HUMAN_WITH_FOX")==1)?true:false;
+            foxIsOnMove = (resultSet2.getInt("IS_FOX_ON_MOVE")==1)?true:false;
+            String tableDescription =  resultSet2.getString("TABLEDESCRIPTION");
+            table = Table.getEmptyTable(size);
+            for (int row=0; size>row;row++) {
+                for (int col=0; size>col;col++) {
+                    if (tableDescription.charAt(row*size+col)=='h') {
+                        table.addHound(new Hound(row,col));
+                    }
+                    if (tableDescription.charAt(row*size+col)=='f') {
+                        table.addFox(new Fox(row,col));
+                    }
+
+                }
+            }
+        isLoadedAGame = true;
+
+
+        }
+        catch(SQLException ex) {logger.severe("There is a problem with the chosen ID: "+ex.getSQLState());}
+
+
+
+    }
 
 
     public static void readInSize() {
         scanner = new Scanner(System.in);
         System.out.print("Give the size of the table as an even integer between 4 and 12: ");
         String read = null;
-        while (size <= 0) {
+        while (!(size <= 12 && size >= 4 && size % 2 == 0)) {
             try {
                 read = scanner.nextLine();
                 size = Integer.parseInt(read);
@@ -52,38 +141,43 @@ public class PlayOnTerminal {
             if (!(size <= 12 && size >= 4 && size % 2 == 0)) {
                 System.out.print("\nOnce again give the size of the table as an even integer between 4 and 12: ");
             }
-            System.out.print("Ok, the size of the table: " + size + "\n");
+            else System.out.print("Ok, the size of the table: " + size + "\n");
         }
     }
 
 
     public static void readInSide() {
-            scanner = new Scanner(System.in);
-            String read = null;
-            System.out.print("\nWould you lead fox (f) or hounds (h) or will you exit (x)?: ");
-            boolean player_determined = false;
-            read = null;
-            while (!player_determined) {
-                String line = scanner.nextLine();
-                char c = line.charAt(0);
-                if (Arrays.asList('f','h','x','F','H','X').contains(c)) {
-                    player_determined=true;
-                    switch (Character.toLowerCase(c)) {
-                        case ('f'): humanPlaysWithFox = true;
-                            System.out.println("You will play with the fox");
-                            break;
-                        case ('h'): humanPlaysWithFox = false;
-                            System.out.println("You will play with the hounds");
-                            break;
-                        case ('x'): humanPlaysWithFox = null;
-                            System.exit(0);
-                            break;
+            if (humanPlaysWithFox == null) {
+                scanner = new Scanner(System.in);
+                String read = null;
+                System.out.print("\nWould you lead fox (f) or hounds (h) or will you exit (x)?: ");
+                boolean player_determined = false;
+                read = null;
+                while (!player_determined) {
+                    String line = scanner.nextLine();
+                    char c = line.charAt(0);
+                    if (Arrays.asList('f', 'h', 'x', 'F', 'H', 'X').contains(c)) {
+                        player_determined = true;
+                        switch (Character.toLowerCase(c)) {
+                            case ('f'):
+                                humanPlaysWithFox = true;
+                                System.out.println("You will play with the fox");
+                                break;
+                            case ('h'):
+                                humanPlaysWithFox = false;
+                                System.out.println("You will play with the hounds");
+                                break;
+                            case ('x'):
+                                humanPlaysWithFox = null;
+                                System.exit(0);
+                                break;
+                        }
+                    } else {
+                        System.out.println("Once again, would you lead fox (f) or hounds (h) or will you exit (x)?: ");
+
                     }
-                } else {
-                    System.out.println("Once again, would you lead fox (f) or hounds (h) or will you exit (x)?: ");
 
                 }
-
             }
     }
 
@@ -190,10 +284,10 @@ public class PlayOnTerminal {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-//    
+
                
     public static void playing() {
-        System.out.println("The starting table is: ");
+        System.out.println("The starting table is: "+table);
         if (humanPlaysWithFox) {
             playWithFox();
         
@@ -215,6 +309,14 @@ public class PlayOnTerminal {
     }
 
     public static void playWithFox() {
+        if (foxIsOnMove == null) foxIsOnMove = true;
+        if (!foxIsOnMove)  {
+            if (table.winFox()) {System.out.println("You won"); System.exit(0); return;}
+            if (table.winHounds()) {System.out.println("You loose"); System.exit(0); return; }
+            table.doARandomHoundMove();
+            foxIsOnMove=true;
+            System.out.println("The table is now: "+table);
+        }
         char c = ' ';
         scanner = new Scanner(System.in);
         while (true) {
@@ -226,12 +328,24 @@ public class PlayOnTerminal {
             while(!Arrays.asList('a','d','q','e','x').contains(c )) {}
             if (c == 'x') System.exit(0);
             table.doMove(new Move(table.getFox(),directionByChar(c)));
+            foxIsOnMove = false;
+            System.out.println("The table is now: "+table);
             table.doARandomHoundMove();
+            foxIsOnMove=true;
             System.out.println("The table is now: "+table);
         }
     }
 
     private static void playWithHounds() {
+        if (foxIsOnMove==null) foxIsOnMove=false;
+        if (foxIsOnMove)  {
+            if (table.winFox()) {System.out.println("You loose"); System.exit(0); return;}
+            if (table.winHounds()) {System.out.println("You won"); System.exit(0); return; }
+            table.doARandomFoxMove();
+            foxIsOnMove=false;
+            System.out.println("The table is now: "+table);
+        }
+
         scanner = new Scanner(System.in);
         char c = ' ';
         Hound activeHound = null;
@@ -246,7 +360,7 @@ public class PlayOnTerminal {
                 if (y == -1) System.exit(0);
                 activeHound = table.getHound(y, x);
                 if (activeHound == null)  {
-                    System.out.println("THere is no hound.");
+                    System.out.println("There is no hound found.");
                     } else isHoundFound=true;
                 }
         System.out.println("Give a step of that hound: a/d, x - exit");
@@ -260,12 +374,16 @@ public class PlayOnTerminal {
             default: break;
             }
         if (exit) return;
+        foxIsOnMove=true;
+        System.out.println("The table is now: "+table);
         table.doARandomFoxMove();
-        System.out.println("The table is now: "+table); //DEBUG
+            foxIsOnMove=false;
+        System.out.println("The table is now: "+table);
         }
     }
 
     private static void saveThePlayedGame() {
+        System.out.println("Possible saving of the actual played game");
     }
 
 
