@@ -14,7 +14,7 @@ import java.util.logging.Logger;
  *
  * @author valyis
  */
-public class PlayOnTerminal { 
+public class PlayOnTerminal {
 
     static final Logger logger = Logger.getLogger(PlayOnTerminal.class.getName());
     static int size = -1;
@@ -24,12 +24,17 @@ public class PlayOnTerminal {
 
     
     public static void main(String[] a) {
+            loadASavedGame();
             readInSize();
             editing();
             System.out.println("The edited table is: "+table);
             readInSide();
             playing();
+            saveThePlayedGame();
         }
+
+
+    public static void loadASavedGame() {}
 
 
     public static void readInSize() {
@@ -259,7 +264,10 @@ public class PlayOnTerminal {
         System.out.println("The table is now: "+table); //DEBUG
         }
     }
-        
+
+    private static void saveThePlayedGame() {
+    }
+
 
 }
     
