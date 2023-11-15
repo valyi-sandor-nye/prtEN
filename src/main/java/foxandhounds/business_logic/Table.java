@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.Vector;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -120,6 +119,10 @@ public class Table {
     @XmlElement
     public int getTableSize() {
         return tableSize;
+    }
+
+    public Character[][] getMatrix() {
+        return matrix;
     }
 
     /**

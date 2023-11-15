@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
+import static java.lang.System.in;
+
 /**
  *
  * @author valyis
@@ -41,7 +43,7 @@ public class PlayOnTerminal {
 
 
     public static boolean questionForLoading() throws ClassNotFoundException {
-        scanner = new Scanner(System.in);
+        scanner = new Scanner(in);
         System.out.println("Do you want to load a saved game from the database? ");
         String read = null;
         char answer = ' ';
@@ -80,7 +82,7 @@ public class PlayOnTerminal {
             resultSet.close();
             statement.close();
             IDMAX = ID;
-            scanner = new Scanner(System.in);
+            scanner = new Scanner(in);
             ID = -1;
             while (!(1 <= ID && ID <= IDMAX)) {
                 System.out.println("Please select an existing ID (the max is: "+IDMAX+") of a saved game which you will play: ");
@@ -127,7 +129,7 @@ public class PlayOnTerminal {
 
 
     public static void readInSize() {
-        scanner = new Scanner(System.in);
+        scanner = new Scanner(in);
         System.out.print("Give the size of the table as an even integer between 4 and 12: ");
         String read = null;
         while (!(size <= 12 && size >= 4 && size % 2 == 0)) {
@@ -148,7 +150,7 @@ public class PlayOnTerminal {
 
     public static void readInSide() {
             if (humanPlaysWithFox == null) {
-                scanner = new Scanner(System.in);
+                scanner = new Scanner(in);
                 String read = null;
                 System.out.print("\nWould you lead fox (f) or hounds (h) or will you exit (x)?: ");
                 boolean player_determined = false;
@@ -190,7 +192,7 @@ public class PlayOnTerminal {
                 "or from the starter table by steps(s) "+"or with a random table? (r)\n"+"x -exit(x)"+
                 "random does not work yet");
         Character userInput = ' ';
-        scanner = new Scanner(System.in);
+        scanner = new Scanner(in);
         while (!Arrays.asList('e','s','r','x').contains(Character.toLowerCase(userInput))) {
             System.out.println("e/s/r/x: ");
             userInput = scanner.nextLine().charAt(0);
@@ -213,7 +215,7 @@ public class PlayOnTerminal {
         }
     
     public static void editingFromEmptyTable() {
-        scanner = new Scanner(System.in);
+        scanner = new Scanner(in);
         table = Table.getEmptyTable(size);  
         System.out.println("Input row and column coordinates of the fox  indexed starting with 0: ");
         String line = scanner.nextLine();
@@ -233,7 +235,7 @@ public class PlayOnTerminal {
     }
 
     public static void editingFromStartingPosition() {
-        scanner = new Scanner(System.in);
+        scanner = new Scanner(in);
         boolean exit = false;
         Character c;
         Hound activeHound = null;
@@ -311,22 +313,22 @@ public class PlayOnTerminal {
     public static void playWithFox() {
         if (foxIsOnMove == null) foxIsOnMove = true;
         if (!foxIsOnMove)  {
-            if (table.winFox()) {System.out.println("You won"); System.exit(0); return;}
-            if (table.winHounds()) {System.out.println("You loose"); System.exit(0); return; }
+            if (table.winFox()) {System.out.println("You won");  return;}
+            if (table.winHounds()) {System.out.println("You loose");  return; }
             table.doARandomHoundMove();
             foxIsOnMove=true;
             System.out.println("The table is now: "+table);
         }
         char c = ' ';
-        scanner = new Scanner(System.in);
+        scanner = new Scanner(in);
         while (true) {
-            if (table.winFox()) {System.out.println("You won"); System.exit(0); return;}
-            if (table.winHounds()) {System.out.println("You loose"); System.exit(0); return; }
+            if (table.winFox()) {System.out.println("You won");  return;}
+            if (table.winHounds()) {System.out.println("You loose");  return; }
             System.out.print("\nYour move: a/d/q/e, exit: x ");
             String s = scanner.nextLine();
             c = Character.toLowerCase(s.charAt(0));
             while(!Arrays.asList('a','d','q','e','x').contains(c )) {}
-            if (c == 'x') System.exit(0);
+            if (c == 'x') return;
             table.doMove(new Move(table.getFox(),directionByChar(c)));
             foxIsOnMove = false;
             System.out.println("The table is now: "+table);
@@ -339,14 +341,14 @@ public class PlayOnTerminal {
     private static void playWithHounds() {
         if (foxIsOnMove==null) foxIsOnMove=false;
         if (foxIsOnMove)  {
-            if (table.winFox()) {System.out.println("You loose"); System.exit(0); return;}
-            if (table.winHounds()) {System.out.println("You won"); System.exit(0); return; }
+            if (table.winFox()) {System.out.println("You loose"); return;}
+            if (table.winHounds()) {System.out.println("You won"); return; }
             table.doARandomFoxMove();
             foxIsOnMove=false;
             System.out.println("The table is now: "+table);
         }
 
-        scanner = new Scanner(System.in);
+        scanner = new Scanner(in);
         char c = ' ';
         Hound activeHound = null;
         boolean exit = false;
@@ -357,7 +359,7 @@ public class PlayOnTerminal {
             while (!isHoundFound) {
                 System.out.println("Which hound is to move? A row and a column should be given: (exit: -1)");
                 int y = scanner.nextInt(); int x = scanner.nextInt();
-                if (y == -1) System.exit(0);
+                if (y == -1) return;
                 activeHound = table.getHound(y, x);
                 if (activeHound == null)  {
                     System.out.println("There is no hound found.");
@@ -384,16 +386,33 @@ public class PlayOnTerminal {
 
     private static void saveThePlayedGame() {
         System.out.println("Possible saving of the actual played game");
-        try (Connection connection = DriverManager.getConnection("jdbc:h2:tcp://localhost/./test", "sa", "sa")) {
-        Stirng askedName = "newname"; //TODO
-            String tdescrpi = "  ffdfdf "; //TODO
+        try (Connection connection =
+             DriverManager.getConnection
+                     ("jdbc:h2:tcp://localhost/./test", "sa", "sa")) {
+        System.out.println("You can save the actual game.");
+        System.out.println("Please type in a new name without spaces otherwise just push an enter");
+        scanner = new Scanner(in);
+        String read = scanner.nextLine();
+        if (read==null || read.length()==0) {
+            System.out.println("No saving happened");
+            return;
+        }
+        String askedName = Arrays.stream(read.split(" ")).findFirst().get();
+        StringBuilder sb = new StringBuilder();
+        Character[][] matrix = table.getMatrix();
+        for (int row=0;size>row;row++) for (int col=0;size>col;col++) {
+            sb.append(matrix[row][col]);
+        }
+        String tableDescriptionAsString = sb.toString();
         String queryToInsert = "INSERT INTO SavedGameFoxAndHounds"+
                 "(SIZE,NAME,TABLEDESCRIPTION,IS_FOX_ON_MOVE,IS_HUMAN_WITH_FOX)" +
                 "VALUES" +
-                "("+size+
-                ",'"+askedName+"','"+tdescrpi+"',"+(foxIsOnMove?1:0)+","+
+                "("+4+
+                ",'"+askedName+"','"+tableDescriptionAsString+"',"+(foxIsOnMove?1:0)+","+
                 (humanPlaysWithFox?1:0)+");";
-
+        System.out.println("queryToInsert: "+queryToInsert);
+        PreparedStatement insertStatement = connection.prepareStatement(queryToInsert);
+            System.out.println("Ennyi sor változott"+insertStatement.executeUpdate());
         } catch (SQLException sqlex) {logger.severe("loading of names of saved games from db failed");}
 
 
