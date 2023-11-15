@@ -384,6 +384,18 @@ public class PlayOnTerminal {
 
     private static void saveThePlayedGame() {
         System.out.println("Possible saving of the actual played game");
+        try (Connection connection = DriverManager.getConnection("jdbc:h2:tcp://localhost/./test", "sa", "sa")) {
+        Stirng askedName = "newname"; //TODO
+            String tdescrpi = "  ffdfdf "; //TODO
+        String queryToInsert = "INSERT INTO SavedGameFoxAndHounds"+
+                "(SIZE,NAME,TABLEDESCRIPTION,IS_FOX_ON_MOVE,IS_HUMAN_WITH_FOX)" +
+                "VALUES" +
+                "("+size+
+                ",'"+askedName+"','"+tdescrpi+"',"+(foxIsOnMove?1:0)+","+
+                (humanPlaysWithFox?1:0)+");";
+
+        } catch (SQLException sqlex) {logger.severe("loading of names of saved games from db failed");}
+
 
      }
 
