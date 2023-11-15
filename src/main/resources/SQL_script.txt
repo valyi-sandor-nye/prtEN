@@ -10,4 +10,5 @@ IS_HUMAN_WITH_FOX BOOLEAN  NOT NULL);
 INSERT INTO SavedGameFoxAndHounds(SIZE,NAME,TABLEDESCRIPTION,IS_FOX_ON_MOVE,IS_HUMAN_WITH_FOX)
 VALUES
 (4,'classic4',' h h        f   ',1,1),
-(6,'classic6',' h h h                        f     ',1,0);
+(6,'classic6',' h h h                        f     ',1,0),
+(4,'not-so-classic4',' h hf           ',1,1);

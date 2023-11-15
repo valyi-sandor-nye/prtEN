@@ -52,7 +52,7 @@ public class PlayOnTerminal {
             }
             if (answer == 'n' ) {return false;}
             else {
-                 Class.forName ("org.h2.Driver");
+                Class.forName ("org.h2.Driver");
                 loadAGame();
                 return true;
             }
@@ -68,7 +68,7 @@ public class PlayOnTerminal {
                 "FROM  SavedGameFoxAndHounds WHERE ID = ?;";
         int ID = -1;
         int IDMAX = -1;
-        try (Connection connection = DriverManager.getConnection("jdbc:h2:tcp://localhost/~/test", "sa", "sa")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:h2:tcp://localhost/./test", "sa", "sa")) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(queryForAllSavedGames);
             System.out.println("Here come the names of the saved games:");
@@ -83,7 +83,7 @@ public class PlayOnTerminal {
             scanner = new Scanner(System.in);
             ID = -1;
             while (!(1 <= ID && ID <= IDMAX)) {
-                System.out.println("Please select an existing ID of a saved game which you will play: ");
+                System.out.println("Please select an existing ID (the max is: "+IDMAX+") of a saved game which you will play: ");
                 String readLine = scanner.nextLine();
                 try {
                     ID = Integer.parseInt(readLine);
@@ -93,7 +93,7 @@ public class PlayOnTerminal {
             }
         } catch (SQLException sqlex) {logger.severe("loading of names of saved games from db failed");}
 
-        try (Connection connection = DriverManager.getConnection("jdbc:h2:tcp://localhost/~/test", "sa", "sa")) {
+        try (Connection connection = DriverManager.getConnection("jdbc:h2:tcp://localhost/./test", "sa", "sa")) {
 
             PreparedStatement preparedStatement = connection.prepareStatement(queryForOneSavedGameByID);
             preparedStatement.setInt(1,ID);
@@ -384,7 +384,8 @@ public class PlayOnTerminal {
 
     private static void saveThePlayedGame() {
         System.out.println("Possible saving of the actual played game");
-    }
+
+     }
 
 
 }
